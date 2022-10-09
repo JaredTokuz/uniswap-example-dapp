@@ -1,5 +1,3 @@
-DEFAULT README BELOW FROM USING THE CODE GEN TOOLS
-
 A short summary would be that this application aims to provide a frontend interface for an analysis report on Uniswap version 3 pool positions that aims to magnify the details of yield that is being generated on any uniswap position. Any position across any chain can be searched and added to the table to show its important details. You must simply provide the chain id and the NFT token id.
 
 Frontend configuration input data is stored in local storage to simplify the functionality. A centralized database plugin is in the works for analyzing data in greater detail. Since the data is for the individual alone it is unnessary to add it to the public blockchain. Possibly a sophisticated decentralized solution could be created but that is outside the scope of this project however this project can be a good training ground for familiarizing with positions in uniswap v3.
