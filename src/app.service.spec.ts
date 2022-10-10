@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 describe('AppController', () => {
-  let appController: AppController;
+  let appService: AppService;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -11,17 +11,17 @@ describe('AppController', () => {
       providers: [AppService],
     }).compile();
 
-    appController = app.get<AppController>(AppController);
+    appService = app.get<AppService>(AppService);
   });
 
   describe('root', () => {
     it('should return position data for an nft', async () => {
-      const response = await appController.getPosition({
+      const response = await appService.getPositionData({
         chainId: '10',
         tokenId: '172653',
         owner: '0x5231555186e4502bdB603c9E42Ae47f93C54d99D',
       });
-      expect(Array.isArray(response)).toBeTruthy();
+      expect(response).toBeTruthy();
       console.log(response);
     });
   });
