@@ -46,7 +46,17 @@ export class MyElement extends LitElement {
    * Table Columns
    */
   @property()
-  _columns: string[] = [];
+  _columns: string[] = [
+    'chainId',
+    'tokenId',
+    'owner',
+    'USDC',
+    'WETH',
+    'WMATIC',
+    'lower',
+    'upper',
+    'boundaryLen',
+  ];
 
   /**
    * fetching flag
@@ -75,8 +85,6 @@ export class MyElement extends LitElement {
 
     Promise.all(promises).then((data) => {
       this._fetching = false;
-      if (this._positions.length)
-        this._columns = Object.keys(this._positions[0]);
     });
   }
 
@@ -98,7 +106,12 @@ export class MyElement extends LitElement {
                   return html`<td>${record[col]}</td>`;
                 }),
                 ...this._rowButtons.map((x) => {
-                  return html`<td @click=${x.func(record)}>${x.name}</td>`;
+                  return html`<td
+                    style="cursor: pointer"
+                    @click=${x.func(record)}
+                  >
+                    ${x.name}
+                  </td>`;
                 }),
               ]}
             </tr>`;
@@ -143,22 +156,31 @@ export class MyElement extends LitElement {
     parsed.push(e.detail);
     localStorage.setItem(this._storageKey, JSON.stringify(parsed));
     const raw_position = { position, params: e.detail };
-    // this._raw_positions = [...this._raw_positions, raw_position];
-    console.log(this._formatRawPosition(raw_position));
     this._positions = [
       this._formatRawPosition(raw_position),
       ...this._positions,
     ];
-    console.log(this._positions);
   }
 
-  private _formatRawPosition = (x: any) => {
+  /**
+   * This creates the record and columns to build the table from
+   * @param x
+   * @returns
+   */
+  private _formatRawPosition = (x: any): Position => {
+    const pair = x.position.pair;
+    const pairKeys = Object.keys(pair);
     return {
       chainId: x.params.chainId,
       tokenId: x.params.tokenId,
-      token0: x.position[0],
-      token1: x.position[1],
-      boundaryLen: 0,
+      owner: x.params.owner.slice(0, 6) + '...' + x.params.owner.slice(-4),
+      [pairKeys[0]]: pair[pairKeys[0]].fee,
+      [pairKeys[1]]: pair[pairKeys[1]].fee,
+      lower: Number(x.position.tickLower).toFixed(5),
+      upper: Number(x.position.tickUpper).toFixed(5),
+      boundaryLen: (
+        Number(x.position.tickUpper) - Number(x.position.tickLower)
+      ).toFixed(5),
       Today: 0,
       R7Avg: 0,
       R30Avg: 0,
@@ -249,11 +271,13 @@ declare global {
   interface Position {
     chainId: number;
     tokenId: number;
-    token0: string;
-    token1: string;
-    boundaryLen: number;
+    owner: string;
+    lower: string;
+    upper: string;
+    boundaryLen: string;
     Today: number;
     R7Avg: number;
     R30Avg: number;
+    [tokenName: string]: string | number;
   }
 }

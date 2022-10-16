@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Console } from 'console';
 import { ethers } from 'ethers';
 import { getPositionManagerAbi } from './NonfungiblePositionManager';
 
@@ -25,21 +24,9 @@ export class AppService {
       },
       { from: params.owner }, // need to simulate the call as the owner
     );
-
-    // console.log(position);
-    // console.log(fees);
-    // console.log(formatUnits(fees[0]));
-    // console.log(formatUnits(fees[1], 6));
-
     return { position, fees };
   }
 }
-
-// default formatting coming from stack overflow
-export const formatUnits = (amt: ethers.BigNumber, units?: number): string =>
-  ethers.utils
-    .formatUnits(ethers.BigNumber.from(amt).toString(), units || 18)
-    .toString();
 
 const getEthRPCProvider = (chainId: string) => {
   if (chainId == '10')
