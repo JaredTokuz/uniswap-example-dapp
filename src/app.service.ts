@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ethers } from 'ethers';
+import { getEthRPCProvider } from './contractAddressMap';
 import { getPositionManagerAbi } from './NonfungiblePositionManager';
 
 const NFTPositionManagerABI = getPositionManagerAbi();
@@ -14,8 +15,8 @@ export class AppService {
     owner: string;
   }): Promise<{ position: any; fees: any }> {
     const positionManagerContract = uniswapV3PositionManager(params.chainId);
-    const position = await positionManagerContract.positions(params.tokenId);
-    const fees = await positionManagerContract.callStatic.collect(
+    const positionCall = positionManagerContract.positions(params.tokenId);
+    const feesCall = positionManagerContract.callStatic.collect(
       {
         tokenId: ethers.BigNumber.from(params.tokenId).toHexString(),
         recipient: params.owner, // some tokens might fail if transferred to address(0)
@@ -24,17 +25,11 @@ export class AppService {
       },
       { from: params.owner }, // need to simulate the call as the owner
     );
+    const [position, fees] = await Promise.all([positionCall, feesCall]);
+
     return { position, fees };
   }
 }
-
-const getEthRPCProvider = (chainId: string) => {
-  if (chainId == '10')
-    return new ethers.providers.JsonRpcProvider(process.env.OPTIMISM_URL);
-  if (chainId == '137')
-    return new ethers.providers.JsonRpcProvider(process.env.POLYGON_URL);
-  throw 'no matching chainId provided';
-};
 
 const uniswapV3PositionManager = (chainId: string) => {
   const provider = getEthRPCProvider(chainId);
@@ -47,23 +42,3 @@ const uniswapV3PositionManager = (chainId: string) => {
   );
   return positionContract;
 };
-
-export enum PositionResponse {
-  nonce,
-  operator,
-  token0,
-  token1,
-  fee,
-  tickLower,
-  tickUpper,
-  liquidity,
-  feeGrowthInside0LastX128,
-  feeGrowthInside1LastX128,
-  tokensOwed0,
-  tokensOwed1,
-}
-
-export enum CollectFeeResponse {
-  amount0,
-  amount1,
-}

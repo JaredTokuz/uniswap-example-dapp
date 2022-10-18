@@ -56,6 +56,7 @@ export class MyElement extends LitElement {
     'lower',
     'upper',
     'boundaryLen',
+    'liquidity',
   ];
 
   /**
@@ -63,6 +64,9 @@ export class MyElement extends LitElement {
    */
   @property()
   _fetching = false;
+
+  @property()
+  _sumAgg: Partial<Position> = {};
 
   connectedCallback() {
     super.connectedCallback();
@@ -85,7 +89,23 @@ export class MyElement extends LitElement {
 
     Promise.all(promises).then((data) => {
       this._fetching = false;
+      this._createSumAggregates(this._positions);
     });
+  }
+  private _createSumAggregates(_positions: Position[]) {
+    const initialValue = {
+      liquidity: 0,
+      USDC: 0,
+      WETH: 0,
+      WMATIC: 0,
+    };
+    this._sumAgg = _positions.reduce((a, b) => {
+      a.liquidity += b.liquidity;
+      a.USDC += Number(b['USDC']) || 0;
+      a.WETH += Number(b['WETH']) || 0;
+      a.WMATIC += Number(b['WMATIC']) || 0;
+      return a;
+    }, initialValue);
   }
 
   render() {
@@ -116,6 +136,11 @@ export class MyElement extends LitElement {
               ]}
             </tr>`;
           })}
+          <tr>
+            ${this._columns.map((col) => {
+              return html`<td>${this._sumAgg[col]}</td>`;
+            })}
+          </tr>
         </tbody>
       </table>
       <div style="padding-top: 100px">
@@ -181,6 +206,7 @@ export class MyElement extends LitElement {
       boundaryLen: (
         Number(x.position.tickUpper) - Number(x.position.tickLower)
       ).toFixed(5),
+      liquidity: x.position.liquidity,
       Today: 0,
       R7Avg: 0,
       R30Avg: 0,
@@ -275,6 +301,7 @@ declare global {
     lower: string;
     upper: string;
     boundaryLen: string;
+    liquidity: number;
     Today: number;
     R7Avg: number;
     R30Avg: number;

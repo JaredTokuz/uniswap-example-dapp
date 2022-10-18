@@ -1,11 +1,13 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { tickToPrice } from '@uniswap/v3-sdk';
+import { AppService } from './app.service';
 import {
-  AppService,
+  createToken,
+  formatFee,
   CollectFeeResponse,
   PositionResponse,
-} from './app.service';
-import { createToken, formatFee } from './contractAddressMap';
+  totalPositionLiquidityUSD,
+} from './contractAddressMap';
 
 @Controller()
 export class AppController {
@@ -38,9 +40,17 @@ export class AppController {
       data.position[PositionResponse.tickUpper],
     );
 
+    const liq = await totalPositionLiquidityUSD({
+      chainId: query.chainId,
+      position: data.position,
+      token0Name: tokenA.symbol,
+      token1Name: tokenB.symbol,
+    });
+
     const positionMetrics = {
       tickLower: priceLower.toFixed(6),
       tickUpper: priceUpper.toFixed(6),
+      liquidity: liq,
       pair: {
         [tokenA.symbol]: {
           fee: formatFee(

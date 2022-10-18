@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
-import { AppService, PositionResponse } from './app.service';
-import { createToken } from './contractAddressMap';
-import { tickToPrice } from '@uniswap/v3-sdk';
+import { AppService } from './app.service';
 
 describe('AppController', () => {
   let appController: AppController;
